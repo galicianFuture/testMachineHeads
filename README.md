@@ -4,7 +4,7 @@
 ## Запуск
 
 ```bash
-npm install --legacy-peer-deps - обязательно
+npm install
 cp .env.example .env
 npm run dev
 ```
