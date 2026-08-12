@@ -1,6 +1,5 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 
-
 declare module 'axios' {
   export interface AxiosRequestConfig {
     skipAuth?: boolean;

@@ -11,63 +11,56 @@ import type { AuthorListItem, PostDetail, PostFormValues, TagListItem } from '@/
 import { ROUTES } from '@/routePaths';
 import type { DynamicState, RootState } from '@/store/types';
 
-export const FORM_OPENED = 'postForm/FORM_OPENED';
-export const FORM_LOADED = 'postForm/FORM_LOADED';
-export const SAVE_REQUESTED = 'postForm/SAVE_REQUESTED';
-export const FORM_FAILED = 'postForm/FORM_FAILED';
+const FORM_OPENED = 'postForm/FORM_OPENED';
+const FORM_LOADED = 'postForm/FORM_LOADED';
+const SAVE_REQUESTED = 'postForm/SAVE_REQUESTED';
+const FAILED = 'postForm/FAILED';
 
 export interface PostFormState {
   authors: AuthorListItem[];
   tags: TagListItem[];
   post: PostDetail | null;
   loading: boolean;
-  saving: boolean;
   error: NormalizedError | null;
 }
 
-type LoadedPayload = Pick<PostFormState, 'authors' | 'tags' | 'post'>;
-
 export const formOpened = (id: number | null) => ({ type: FORM_OPENED, payload: id }) as const;
-
-export const formLoaded = (payload: LoadedPayload) => ({ type: FORM_LOADED, payload }) as const;
 
 export const saveRequested = (id: number | null, values: PostFormValues) =>
   ({ type: SAVE_REQUESTED, payload: { id, values } }) as const;
 
-export const formFailed = (error: NormalizedError) =>
-  ({ type: FORM_FAILED, payload: error }) as const;
+const formLoaded = (payload: Pick<PostFormState, 'authors' | 'tags' | 'post'>) =>
+  ({ type: FORM_LOADED, payload }) as const;
 
-export type PostFormAction =
+const failed = (error: NormalizedError) => ({ type: FAILED, payload: error }) as const;
+
+type PostFormAction =
   | ReturnType<typeof formOpened>
-  | ReturnType<typeof formLoaded>
   | ReturnType<typeof saveRequested>
-  | ReturnType<typeof formFailed>;
+  | ReturnType<typeof formLoaded>
+  | ReturnType<typeof failed>;
 
 const initialState: PostFormState = {
   authors: [],
   tags: [],
   post: null,
   loading: false,
-  saving: false,
   error: null,
 };
 
-export function postFormReducer(
-  state: PostFormState = initialState,
-  action: PostFormAction,
-): PostFormState {
+function reducer(state: PostFormState = initialState, action: PostFormAction): PostFormState {
   switch (action.type) {
     case FORM_OPENED:
       return { ...initialState, loading: true };
 
+    case SAVE_REQUESTED:
+      return { ...state, loading: true, error: null };
+
     case FORM_LOADED:
       return { ...state, loading: false, ...action.payload };
 
-    case SAVE_REQUESTED:
-      return { ...state, saving: true, error: null };
-
-    case FORM_FAILED:
-      return { ...state, loading: false, saving: false, error: action.payload };
+    case FAILED:
+      return { ...state, loading: false, error: action.payload };
 
     default:
       return state;
@@ -76,34 +69,37 @@ export function postFormReducer(
 
 export const selectPostForm = (state: RootState) => state.postForm ?? initialState;
 
-function* loadForm(action: ReturnType<typeof formOpened>): SagaIterator {
+function* loadForm({ payload }: ReturnType<typeof formOpened>): SagaIterator {
   try {
     const [authors, tags]: [AuthorListItem[], TagListItem[]] = yield all([
       call(fetchAuthors),
       call(fetchTags),
     ]);
-    const post: PostDetail | null =
-      action.payload === null ? null : yield call(fetchPost, action.payload);
+    const post: PostDetail | null = payload === null ? null : yield call(fetchPost, payload);
 
     yield put(formLoaded({ authors, tags, post }));
   } catch (error) {
-    yield put(formFailed(normalizeError(error)));
+    yield put(failed(normalizeError(error)));
   }
 }
 
 function* savePost({ payload }: ReturnType<typeof saveRequested>): SagaIterator {
+  const { id, values } = payload;
+
   try {
-    yield payload.id === null
-      ? call(createPost, payload.values)
-      : call(updatePost, payload.id, payload.values);
+    if (id === null) {
+      yield call(createPost, values);
+    } else {
+      yield call(updatePost, id, values);
+    }
 
     yield put(push(ROUTES.posts));
   } catch (error) {
-    yield put(formFailed(normalizeError(error)));
+    yield put(failed(normalizeError(error)));
   }
 }
 
-export function* postFormSaga(): SagaIterator {
+function* postFormSaga(): SagaIterator {
   yield takeLatest(FORM_OPENED, loadForm);
   yield takeLatest(SAVE_REQUESTED, savePost);
 }
@@ -111,7 +107,7 @@ export function* postFormSaga(): SagaIterator {
 export const postFormModule: ISagaModule<Pick<DynamicState, 'postForm'>> = {
   id: 'postForm',
   reducerMap: {
-    postForm: postFormReducer as Reducer<PostFormState, AnyAction>,
+    postForm: reducer as Reducer<PostFormState, AnyAction>,
   },
   sagas: [postFormSaga],
 };

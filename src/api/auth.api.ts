@@ -2,7 +2,6 @@ import { client } from './client';
 import { toFormData } from './formData';
 import type { Profile, TokenPair } from './types';
 
-
 export interface Credentials {
   email: string;
   password: string;
@@ -18,11 +17,9 @@ export async function generateToken({ email, password }: Credentials): Promise<T
 }
 
 export async function refreshToken(refresh_token: string): Promise<TokenPair> {
-  const { data } = await client.post(
-    '/auth/token-refresh',
-    toFormData({ refresh_token }),
-    { skipAuth: true },
-  );
+  const { data } = await client.post('/auth/token-refresh', toFormData({ refresh_token }), {
+    skipAuth: true,
+  });
   return data;
 }
 

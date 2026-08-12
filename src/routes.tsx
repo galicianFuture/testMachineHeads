@@ -1,19 +1,14 @@
 import { Redirect, Route, Switch } from 'react-router-dom';
-import { Card, Typography } from 'antd';
 import AppLayout from './components/Layout/AppLayout';
 import PrivateRoute from './components/PrivateRoute';
+import AuthorFormPage from './pages/AuthorFormPage';
+import AuthorsPage from './pages/AuthorsPage';
 import LoginPage from './pages/LoginPage';
 import PostFormPage from './pages/PostFormPage';
 import PostsPage from './pages/PostsPage';
+import TagFormPage from './pages/TagFormPage';
+import TagsPage from './pages/TagsPage';
 import { ROUTES } from './routePaths';
-
-function SectionPlaceholder({ title }: { title: string }) {
-  return (
-    <Card title={title}>
-      <Typography.Text type="secondary">Раздел появится на следующих этапах.</Typography.Text>
-    </Card>
-  );
-}
 
 export default function AppRoutes() {
   return (
@@ -34,11 +29,25 @@ export default function AppRoutes() {
             <Route exact path={ROUTES.postEdit}>
               <PostFormPage />
             </Route>
-            <Route path={ROUTES.authors}>
-              <SectionPlaceholder title="Авторы" />
+
+            <Route exact path={ROUTES.authors}>
+              <AuthorsPage />
             </Route>
-            <Route path={ROUTES.tags}>
-              <SectionPlaceholder title="Теги" />
+            <Route exact path={ROUTES.authorCreate}>
+              <AuthorFormPage />
+            </Route>
+            <Route exact path={ROUTES.authorEdit}>
+              <AuthorFormPage />
+            </Route>
+
+            <Route exact path={ROUTES.tags}>
+              <TagsPage />
+            </Route>
+            <Route exact path={ROUTES.tagCreate}>
+              <TagFormPage />
+            </Route>
+            <Route exact path={ROUTES.tagEdit}>
+              <TagFormPage />
             </Route>
           </Switch>
         </AppLayout>

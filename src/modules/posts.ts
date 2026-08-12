@@ -7,27 +7,26 @@ import { normalizeError, type NormalizedError } from '@/api/errors';
 import type { PaginatedResult, Pagination, PostListItem } from '@/api/types';
 import type { DynamicState, RootState } from '@/store/types';
 
-export const POSTS_REQUESTED = 'posts/POSTS_REQUESTED';
-export const POSTS_LOADED = 'posts/POSTS_LOADED';
-export const POSTS_FAILED = 'posts/POSTS_FAILED';
-export const POST_DELETE_REQUESTED = 'posts/POST_DELETE_REQUESTED';
+const POSTS_REQUESTED = 'posts/POSTS_REQUESTED';
+const POSTS_LOADED = 'posts/POSTS_LOADED';
+const DELETE_REQUESTED = 'posts/DELETE_REQUESTED';
+const FAILED = 'posts/FAILED';
 
 export const postsRequested = (page: number) => ({ type: POSTS_REQUESTED, payload: page }) as const;
 
-export const postsLoaded = (result: PaginatedResult<PostListItem>) =>
+export const postDeleteRequested = (id: number, page: number) =>
+  ({ type: DELETE_REQUESTED, payload: { id, page } }) as const;
+
+const postsLoaded = (result: PaginatedResult<PostListItem>) =>
   ({ type: POSTS_LOADED, payload: result }) as const;
 
-export const postsFailed = (error: NormalizedError) =>
-  ({ type: POSTS_FAILED, payload: error }) as const;
+const failed = (error: NormalizedError) => ({ type: FAILED, payload: error }) as const;
 
-export const postDeleteRequested = (id: number, page: number) =>
-  ({ type: POST_DELETE_REQUESTED, payload: { id, page } }) as const;
-
-export type PostsAction =
+type PostsAction =
   | ReturnType<typeof postsRequested>
+  | ReturnType<typeof postDeleteRequested>
   | ReturnType<typeof postsLoaded>
-  | ReturnType<typeof postsFailed>
-  | ReturnType<typeof postDeleteRequested>;
+  | ReturnType<typeof failed>;
 
 export interface PostsState {
   items: PostListItem[];
@@ -43,10 +42,10 @@ const initialState: PostsState = {
   error: null,
 };
 
-export function postsReducer(state: PostsState = initialState, action: PostsAction): PostsState {
+function reducer(state: PostsState = initialState, action: PostsAction): PostsState {
   switch (action.type) {
     case POSTS_REQUESTED:
-    case POST_DELETE_REQUESTED:
+    case DELETE_REQUESTED:
       return { ...state, loading: true, error: null };
 
     case POSTS_LOADED:
@@ -57,7 +56,7 @@ export function postsReducer(state: PostsState = initialState, action: PostsActi
         pagination: action.payload.pagination,
       };
 
-    case POSTS_FAILED:
+    case FAILED:
       return { ...state, loading: false, error: action.payload };
 
     default:
@@ -67,33 +66,33 @@ export function postsReducer(state: PostsState = initialState, action: PostsActi
 
 export const selectPosts = (state: RootState) => state.posts ?? initialState;
 
-function* loadPosts(action: ReturnType<typeof postsRequested>): SagaIterator {
+function* loadPosts({ payload }: ReturnType<typeof postsRequested>): SagaIterator {
   try {
-    const result: PaginatedResult<PostListItem> = yield call(fetchPosts, action.payload);
+    const result: PaginatedResult<PostListItem> = yield call(fetchPosts, payload);
     yield put(postsLoaded(result));
   } catch (error) {
-    yield put(postsFailed(normalizeError(error)));
+    yield put(failed(normalizeError(error)));
   }
 }
 
-function* removePost(action: ReturnType<typeof postDeleteRequested>): SagaIterator {
+function* removePost({ payload }: ReturnType<typeof postDeleteRequested>): SagaIterator {
   try {
-    yield call(deletePost, action.payload.id);
-    yield put(postsRequested(action.payload.page));
+    yield call(deletePost, payload.id);
+    yield put(postsRequested(payload.page));
   } catch (error) {
-    yield put(postsFailed(normalizeError(error)));
+    yield put(failed(normalizeError(error)));
   }
 }
 
-export function* postsSaga(): SagaIterator {
+function* postsSaga(): SagaIterator {
   yield takeLatest(POSTS_REQUESTED, loadPosts);
-  yield takeLatest(POST_DELETE_REQUESTED, removePost);
+  yield takeLatest(DELETE_REQUESTED, removePost);
 }
 
 export const postsModule: ISagaModule<Pick<DynamicState, 'posts'>> = {
   id: 'posts',
   reducerMap: {
-    posts: postsReducer as Reducer<PostsState, AnyAction>,
+    posts: reducer as Reducer<PostsState, AnyAction>,
   },
   sagas: [postsSaga],
 };

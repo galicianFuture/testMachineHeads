@@ -6,6 +6,7 @@ import { DynamicModuleLoader } from 'redux-dynamic-modules-react';
 import type { PostFormValues } from '@/api/types';
 import ImageUpload from '@/components/ImageUpload';
 import ServerErrorAlert from '@/components/ServerErrorAlert';
+import { authorFullName } from '@/modules/authors';
 import { formOpened, postFormModule, saveRequested, selectPostForm } from '@/modules/postForm';
 import { ROUTES } from '@/routePaths';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -15,7 +16,7 @@ const FIELDS = ['code', 'title', 'text', 'authorId', 'tagIds', 'previewPicture']
 function PostForm({ id }: { id: number | null }) {
   const dispatch = useAppDispatch();
   const [form] = Form.useForm<PostFormValues>();
-  const { authors, tags, post, loading, saving, error } = useAppSelector(selectPostForm);
+  const { authors, tags, post, loading, error } = useAppSelector(selectPostForm);
 
   useEffect(() => {
     dispatch(formOpened(id));
@@ -64,7 +65,7 @@ function PostForm({ id }: { id: number | null }) {
               placeholder="Выберите автора"
               options={authors.map((author) => ({
                 value: author.id,
-                label: [author.lastName, author.name, author.secondName].filter(Boolean).join(' '),
+                label: authorFullName(author),
               }))}
             />
           </Form.Item>
@@ -86,7 +87,7 @@ function PostForm({ id }: { id: number | null }) {
           </Form.Item>
 
           <Space>
-            <Button type="primary" htmlType="submit" loading={saving}>
+            <Button type="primary" htmlType="submit" loading={loading}>
               Сохранить
             </Button>
             <Button onClick={() => dispatch(push(ROUTES.posts))}>Отмена</Button>

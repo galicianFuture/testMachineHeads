@@ -1,4 +1,3 @@
-
 type Scalar = string | number | boolean;
 
 export type FormDataValue = Scalar | Blob | null | undefined | ReadonlyArray<Scalar | Blob>;
@@ -25,7 +24,7 @@ export function toFormData(payload: FormDataPayload): FormData {
     if (value === null || value === undefined) return;
 
     if (Array.isArray(value)) {
-      (value).forEach((item) => {
+      value.forEach((item) => {
         if (item === null || item === undefined) return;
         appendValue(form, `${key}[]`, item);
       });

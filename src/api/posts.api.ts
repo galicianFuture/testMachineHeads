@@ -1,7 +1,13 @@
 import type { AxiosResponseHeaders, RawAxiosResponseHeaders } from 'axios';
 import { client } from './client';
 import { toFormData } from './formData';
-import type { Pagination, PaginatedResult, PostDetail, PostFormValues, PostListItem } from './types';
+import type {
+  Pagination,
+  PaginatedResult,
+  PostDetail,
+  PostFormValues,
+  PostListItem,
+} from './types';
 
 type ResponseHeaders = RawAxiosResponseHeaders | AxiosResponseHeaders;
 

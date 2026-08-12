@@ -6,7 +6,6 @@ import type { History } from 'history';
 import { getRootModule } from './rootModule';
 import type { RootState } from './types';
 
-
 export function configureStore(history: History): IModuleStore<RootState> {
   return createStore<RootState>(
     {
