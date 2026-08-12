@@ -14,6 +14,7 @@ import type { DynamicState, RootState } from '@/store/types';
 const FORM_OPENED = 'postForm/FORM_OPENED';
 const FORM_LOADED = 'postForm/FORM_LOADED';
 const SAVE_REQUESTED = 'postForm/SAVE_REQUESTED';
+const SAVED = 'postForm/SAVED';
 const FAILED = 'postForm/FAILED';
 
 export interface PostFormState {
@@ -32,12 +33,15 @@ export const saveRequested = (id: number | null, values: PostFormValues) =>
 const formLoaded = (payload: Pick<PostFormState, 'authors' | 'tags' | 'post'>) =>
   ({ type: FORM_LOADED, payload }) as const;
 
+const saved = () => ({ type: SAVED }) as const;
+
 const failed = (error: NormalizedError) => ({ type: FAILED, payload: error }) as const;
 
 type PostFormAction =
   | ReturnType<typeof formOpened>
   | ReturnType<typeof saveRequested>
   | ReturnType<typeof formLoaded>
+  | ReturnType<typeof saved>
   | ReturnType<typeof failed>;
 
 const initialState: PostFormState = {
@@ -58,6 +62,9 @@ function reducer(state: PostFormState = initialState, action: PostFormAction): P
 
     case FORM_LOADED:
       return { ...state, loading: false, ...action.payload };
+
+    case SAVED:
+      return { ...state, loading: false };
 
     case FAILED:
       return { ...state, loading: false, error: action.payload };
@@ -93,6 +100,7 @@ function* savePost({ payload }: ReturnType<typeof saveRequested>): SagaIterator 
       yield call(updatePost, id, values);
     }
 
+    yield put(saved());
     yield put(push(ROUTES.posts));
   } catch (error) {
     yield put(failed(normalizeError(error)));

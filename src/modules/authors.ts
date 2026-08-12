@@ -22,6 +22,7 @@ const AUTHOR_OPENED = 'authors/AUTHOR_OPENED';
 const AUTHOR_LOADED = 'authors/AUTHOR_LOADED';
 const SAVE_REQUESTED = 'authors/SAVE_REQUESTED';
 const DELETE_REQUESTED = 'authors/DELETE_REQUESTED';
+const SAVED = 'authors/SAVED';
 const FAILED = 'authors/FAILED';
 
 export const authorsRequested = () => ({ type: AUTHORS_REQUESTED }) as const;
@@ -40,6 +41,8 @@ const authorsLoaded = (items: AuthorListItem[]) =>
 const authorLoaded = (author: AuthorDetail | null) =>
   ({ type: AUTHOR_LOADED, payload: author }) as const;
 
+const saved = () => ({ type: SAVED }) as const;
+
 const failed = (error: NormalizedError) => ({ type: FAILED, payload: error }) as const;
 
 type AuthorsAction =
@@ -49,6 +52,7 @@ type AuthorsAction =
   | ReturnType<typeof deleteRequested>
   | ReturnType<typeof authorsLoaded>
   | ReturnType<typeof authorLoaded>
+  | ReturnType<typeof saved>
   | ReturnType<typeof failed>;
 
 export interface AuthorsState {
@@ -75,6 +79,9 @@ function reducer(state: AuthorsState = initialState, action: AuthorsAction): Aut
 
     case AUTHOR_LOADED:
       return { ...state, loading: false, author: action.payload };
+
+    case SAVED:
+      return { ...state, loading: false };
 
     case FAILED:
       return { ...state, loading: false, error: action.payload };
@@ -122,6 +129,7 @@ function* saveAuthor({ payload }: ReturnType<typeof saveRequested>): SagaIterato
       yield call(updateAuthor, id, values);
     }
 
+    yield put(saved());
     yield put(push(ROUTES.authors));
   } catch (error) {
     yield put(failed(normalizeError(error)));

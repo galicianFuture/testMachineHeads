@@ -1,4 +1,3 @@
-import { applyMiddleware } from 'redux';
 import { createStore, type IModuleStore } from 'redux-dynamic-modules-core';
 import { getSagaExtension } from 'redux-dynamic-modules-saga';
 import { routerMiddleware } from 'connected-react-router';
@@ -9,8 +8,7 @@ import type { RootState } from './types';
 export function configureStore(history: History): IModuleStore<RootState> {
   return createStore<RootState>(
     {
-      enhancers: [applyMiddleware(routerMiddleware(history))],
-      extensions: [getSagaExtension()],
+      extensions: [getSagaExtension(), { middleware: [routerMiddleware(history)] }],
     },
     getRootModule(history),
   );

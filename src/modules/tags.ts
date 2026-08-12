@@ -15,6 +15,7 @@ const TAG_OPENED = 'tags/TAG_OPENED';
 const TAG_LOADED = 'tags/TAG_LOADED';
 const SAVE_REQUESTED = 'tags/SAVE_REQUESTED';
 const DELETE_REQUESTED = 'tags/DELETE_REQUESTED';
+const SAVED = 'tags/SAVED';
 const FAILED = 'tags/FAILED';
 
 export const tagsRequested = () => ({ type: TAGS_REQUESTED }) as const;
@@ -31,6 +32,8 @@ const tagsLoaded = (items: TagListItem[]) => ({ type: TAGS_LOADED, payload: item
 
 const tagLoaded = (tag: TagDetail | null) => ({ type: TAG_LOADED, payload: tag }) as const;
 
+const saved = () => ({ type: SAVED }) as const;
+
 const failed = (error: NormalizedError) => ({ type: FAILED, payload: error }) as const;
 
 type TagsAction =
@@ -40,6 +43,7 @@ type TagsAction =
   | ReturnType<typeof deleteRequested>
   | ReturnType<typeof tagsLoaded>
   | ReturnType<typeof tagLoaded>
+  | ReturnType<typeof saved>
   | ReturnType<typeof failed>;
 
 export interface TagsState {
@@ -66,6 +70,9 @@ function reducer(state: TagsState = initialState, action: TagsAction): TagsState
 
     case TAG_LOADED:
       return { ...state, loading: false, tag: action.payload };
+
+    case SAVED:
+      return { ...state, loading: false };
 
     case FAILED:
       return { ...state, loading: false, error: action.payload };
@@ -110,6 +117,7 @@ function* saveTag({ payload }: ReturnType<typeof saveRequested>): SagaIterator {
       yield call(updateTag, id, values);
     }
 
+    yield put(saved());
     yield put(push(ROUTES.tags));
   } catch (error) {
     yield put(failed(normalizeError(error)));
