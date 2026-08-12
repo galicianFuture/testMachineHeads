@@ -1,0 +1,11 @@
+/*
+ * Tailwind подключается без preflight: его сброс убирает фон и рамки у кнопок
+ * и ломает компоненты Ant Design. Нормализацию делает antd/dist/reset.css,
+ * который импортируется раньше в main.tsx.
+ *
+ * Утилиты намеренно импортируются вне CSS-слоя: antd вставляет свои стили
+ * в <head> в рантайме без @layer, а нелоевые правила в каскаде всегда сильнее
+ * послоенных. В слое utilities Tailwind проигрывал бы antd при любой специфичности.
+ */
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css';
