@@ -37,7 +37,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           className="flex-1 min-w-0"
         />
         <Space>
-          <Typography.Text v-if={profile} className="text-white! whitespace-nowrap">
+          <Typography.Text className="text-white! whitespace-nowrap">
             {profile?.name}
           </Typography.Text>
           <Button ghost onClick={() => dispatch(logoutRequested())}>

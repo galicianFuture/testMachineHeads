@@ -3,6 +3,7 @@ import { Card, Typography } from 'antd';
 import AppLayout from './components/Layout/AppLayout';
 import PrivateRoute from './components/PrivateRoute';
 import LoginPage from './pages/LoginPage';
+import PostsPage from './pages/PostsPage';
 import { ROUTES } from './routePaths';
 
 function SectionPlaceholder({ title }: { title: string }) {
@@ -23,8 +24,8 @@ export default function AppRoutes() {
       <PrivateRoute path={[ROUTES.posts, ROUTES.authors, ROUTES.tags]}>
         <AppLayout>
           <Switch>
-            <Route path={ROUTES.posts}>
-              <SectionPlaceholder title="Посты" />
+            <Route exact path={ROUTES.posts}>
+              <PostsPage />
             </Route>
             <Route path={ROUTES.authors}>
               <SectionPlaceholder title="Авторы" />
