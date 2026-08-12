@@ -6,7 +6,20 @@ import ruRU from 'antd/locale/ru_RU';
 import 'antd/dist/reset.css';
 import './index.css';
 import App from './App';
+import { setAuthAdapter } from './api/client';
+import { sessionEnded } from './modules/auth';
+import { clearTokens, getAccessToken, isAccessTokenExpiring, refreshSession } from './session';
 import { history, store } from './store';
+
+setAuthAdapter({
+  getAccessToken,
+  isAccessTokenExpiring,
+  refresh: refreshSession,
+  onAuthFailure: () => {
+    clearTokens();
+    store.dispatch(sessionEnded());
+  },
+});
 
 ReactDOM.render(
   <Provider store={store}>

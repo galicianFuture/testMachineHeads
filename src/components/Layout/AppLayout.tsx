@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
-import { Layout, Menu, Typography } from 'antd';
+import { Button, Layout, Menu, Space, Typography } from 'antd';
 import { Link } from 'react-router-dom';
-import { ROUTES } from '../../routes';
-import { useAppSelector } from '../../store/hooks';
+import { logoutRequested, selectProfile } from '@/modules/auth';
+import { ROUTES } from '@/routePaths';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 const { Header, Content } = Layout;
 
@@ -17,7 +18,9 @@ interface AppLayoutProps {
 }
 
 export default function AppLayout({ children }: AppLayoutProps) {
+  const dispatch = useAppDispatch();
   const pathname = useAppSelector((state) => state.router.location.pathname);
+  const profile = useAppSelector(selectProfile);
   const selectedKeys = [`/${pathname.split('/')[1] ?? ''}`];
 
   return (
@@ -33,6 +36,14 @@ export default function AppLayout({ children }: AppLayoutProps) {
           items={MENU_ITEMS}
           className="flex-1 min-w-0"
         />
+        <Space>
+          <Typography.Text v-if={profile} className="text-white! whitespace-nowrap">
+            {profile?.name}
+          </Typography.Text>
+          <Button ghost onClick={() => dispatch(logoutRequested())}>
+            Выйти
+          </Button>
+        </Space>
       </Header>
       <Content className="p-6">{children}</Content>
     </Layout>
