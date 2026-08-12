@@ -3,6 +3,7 @@ import { Card, Typography } from 'antd';
 import AppLayout from './components/Layout/AppLayout';
 import PrivateRoute from './components/PrivateRoute';
 import LoginPage from './pages/LoginPage';
+import PostFormPage from './pages/PostFormPage';
 import PostsPage from './pages/PostsPage';
 import { ROUTES } from './routePaths';
 
@@ -26,6 +27,12 @@ export default function AppRoutes() {
           <Switch>
             <Route exact path={ROUTES.posts}>
               <PostsPage />
+            </Route>
+            <Route exact path={ROUTES.postCreate}>
+              <PostFormPage />
+            </Route>
+            <Route exact path={ROUTES.postEdit}>
+              <PostFormPage />
             </Route>
             <Route path={ROUTES.authors}>
               <SectionPlaceholder title="Авторы" />
