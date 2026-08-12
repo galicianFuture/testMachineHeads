@@ -6,7 +6,7 @@ const ACCESS_TOKEN_KEY = 'access_token';
 const REFRESH_TOKEN_KEY = 'refresh_token';
 const ACCESS_EXPIRED_AT_KEY = 'access_expired_at';
 
-const REFRESH_THRESHOLD_MS = 30_000;
+const REFRESH_THRESHOLD_MS = 30000;
 
 export function saveTokens(pair: TokenPair): void {
   const options: Cookies.CookieAttributes = {
